@@ -17,7 +17,7 @@ export default async function AppLayout({
 					</main>
 				</div>
 			</NextAuthProvider>
-			<Toaster richColors />
+			<Toaster position="top-right" richColors />
 		</main>
 	)
 }

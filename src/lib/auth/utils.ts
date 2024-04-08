@@ -26,15 +26,14 @@ export type AuthSession = {
 
 export const authOptions: NextAuthOptions = {
 	adapter: DrizzleAdapter(db) as Adapter,
+	secret: env.NEXTAUTH_SECRET,
 	callbacks: {
 		session: ({ session, user }) => {
 			session.user.id = user.id;
 			return session;
 		},
 	},
-	providers: [
-			
-	],
+	providers: [],
 };
 
 

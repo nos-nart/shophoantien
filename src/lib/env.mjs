@@ -19,6 +19,8 @@ export const env = createEnv({
 			// VERCEL_URL doesn't include `https` so it cant be validated as a URL
 			process.env.VERCEL_URL ? z.string().min(1) : z.string().url()
 		),
+		GMAIL_ADDRESS: z.string(),
+		GMAIL_APP_PASSWORD: z.string()
 	},
 	client: {
 		// NEXT_PUBLIC_PUBLISHABLE_KEY: z.string().min(1),

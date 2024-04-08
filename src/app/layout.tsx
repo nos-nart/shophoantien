@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
-import { absoluteUrl, cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig } from "@/config/site";
@@ -47,7 +47,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body  className={cn(
+			<body className={cn(
 				"min-h-screen bg-background font-sans antialiased",
 				fontSans.variable
 			)}>
