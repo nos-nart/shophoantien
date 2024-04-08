@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig } from "@/config/site";
+import { Toaster } from "sonner";
 
 const fontSans = FontSans({
 	subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 					{children}
 				</ThemeProvider>
+				<Toaster position="top-right" richColors />
 			</body>
 		</html>
 	);

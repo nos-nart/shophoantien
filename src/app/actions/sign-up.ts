@@ -13,10 +13,10 @@ export async function signUp(values: z.infer<typeof signUpFormSchema>) {
 	try {
 		const { email } = values;
 		const existed = await db.select().from(users).where(eq(users.email, email));
-		if (existed) {
+		if (existed.length > 0) {
 			return { success: false, message: 'Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.' }
 		}
-		await db.insert(users).values({ email, id: nanoid() }).execute();
+		await db.insert(users).values({ email, id: nanoid() });
 		const { otp } = await createOtp(email);
 		await sendVerificationMail(email, otp);
 		return { success: true, message: 'Vui lòng kiểm tra email của bạn để xác minh tài khoản.' }

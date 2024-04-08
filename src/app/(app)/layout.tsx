@@ -1,6 +1,5 @@
 import { checkAuth } from "@/lib/auth/utils";
 import NextAuthProvider from "@/lib/auth/Provider";
-import { Toaster } from "@/components/ui/sonner";
 
 export default async function AppLayout({
   children,
@@ -17,7 +16,6 @@ export default async function AppLayout({
 					</main>
 				</div>
 			</NextAuthProvider>
-			<Toaster position="top-right" richColors />
 		</main>
 	)
 }
