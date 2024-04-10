@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { Home } from 'lucide-react';
-import { getUserAuth } from "@/lib/auth/utils";
 import { redirect } from "next/navigation";
+import { auth } from '@/lib/auth/utils';
 
 export default async function AuthLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const session = await getUserAuth();
+	const session = await auth();
 	if (session?.session) redirect("/");
 
 	return (

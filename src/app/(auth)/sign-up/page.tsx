@@ -1,20 +1,20 @@
 "use client";
 
-import { z } from "zod"
+import { z } from "zod";
 import Link from "next/link";
-import { useForm } from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { useTransition } from "react";
+import { useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { signUp } from "@/app/actions/sign-up";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -22,85 +22,107 @@ import { redirect } from "next/navigation";
 import { lcKey } from "@/lib/utils";
 
 export const signUpFormSchema = z.object({
-	email: z.string().email({ message: 'Email không hợp lệ'}),
+  email: z.string().email({ message: "Email không hợp lệ" }),
 });
 
 export type SignUpType = z.infer<typeof signUpFormSchema>;
 
 const Page = () => {
-	const [_, setLocalStorage] = useLocalStorage(lcKey, '');
-	const [isPending, startTransition] = useTransition();
-	const form = useForm<z.infer<typeof signUpFormSchema>>({
-		resolver: zodResolver(signUpFormSchema),
-		defaultValues: {
-			email: "",
-		},
-	});
+  const [_, setLocalStorage] = useLocalStorage(lcKey, "");
+  const [isPending, startTransition] = useTransition();
+  const form = useForm<z.infer<typeof signUpFormSchema>>({
+    resolver: zodResolver(signUpFormSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+  const isVerifiedRef = useRef<boolean | undefined>(undefined);
 
-	function onSubmit(values: z.infer<typeof signUpFormSchema>) {
-		startTransition(async () => {
-			try {
-				const { message, success } = await signUp(values);
-				if (success) {
-					toast.success('Thành công', {
-						description: message
-					});
-					setLocalStorage(values.email);
-					redirect('/verified');
-				} else {
-					toast.error('Thất bại', {
-						description: message
-					});
-				}
-			} catch (error) {
-				console.log('An error occurs');
-			}
-		});
-	}
+  function onSubmit(values: z.infer<typeof signUpFormSchema>) {
+    isVerifiedRef.current = undefined;
+    startTransition(async () => {
+      try {
+        const { message, success, isVerified } = await signUp(values);
+        if (success) {
+          toast.success("Thành công", {
+            description: message,
+          });
+          setLocalStorage(values.email);
+          redirect("/verified");
+        } else {
+          toast.error("Thất bại", {
+            description: message,
+          });
+          if (isVerified === false) {
+            toast.warning('Bấm vào nút "Gửi lại OTP" để xác thực tài khoản.');
+          }
+          if (isVerified) {
+            toast.info(`Tài khoản với email: ${values.email} đã được xác thực`);
+          }
+          isVerifiedRef.current = isVerified;
+        }
+      } catch (error) {
+        console.log("An error occurs");
+      }
+    });
+  }
 
-	return (
-		<div className="grid lg:grid-cols-2 gap-12" style={{ width: 'min(60ch, 100vw - 2rem)' }}>
-			<div className="lg:grid hidden place-content-center">
-				<Image src="/monetize.png" alt="test" width={200} height={200} />
-			</div>
-			<div>
-				<div className="py-6">
-					<h2 className="text-2xl font-bold">Tạo tài khoản</h2>
-					<p className="my-2 text-gray-600">
-						Mua hàng hoàn tiền lên đến 80%
-					</p>
-				</div>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<Input
-											disabled={isPending}
-											placeholder="your.email@example.com"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<Button className="w-full" type="submit">Tạo tài khoản</Button>
-					</form>
-				</Form>
-				<p className="text-xs py-6">Chúng tôi coi trọng quyền riêng tư của bạn và sẽ không bao giờ gửi thông tin không liên quan.</p>
-				<div>
-					Bạn đã có tài khoản?{' '}
-					<Link className="text-blue-500 hover:underline" href="/sign-in">
-						Đăng nhập
-					</Link>
-				</div>
-			</div>
-		</div>
-	);
+  function onResendOtp() {}
+
+  return (
+    <div
+      className="grid lg:grid-cols-2 gap-12"
+      style={{ width: "min(60ch, 100vw - 2rem)" }}
+    >
+      <div className="lg:grid hidden place-content-center">
+        <Image src="/monetize.png" alt="test" width={200} height={200} />
+      </div>
+      <div>
+        <div className="py-6">
+          <h2 className="text-2xl font-bold">Tạo tài khoản</h2>
+          <p className="my-2 text-gray-600">Mua hàng hoàn tiền lên đến 80%</p>
+        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      placeholder="your.email@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {isVerifiedRef.current === false && (
+              <Button variant={"link"} onClick={onResendOtp}>
+                Gửi lại OTP
+              </Button>
+            )}
+            <Button className="w-full" type="submit">
+              Tạo tài khoản
+            </Button>
+          </form>
+        </Form>
+        <p className="text-xs py-6">
+          Chúng tôi coi trọng quyền riêng tư của bạn và sẽ không bao giờ gửi
+          thông tin không liên quan.
+        </p>
+        <div>
+          Bạn đã có tài khoản?{" "}
+          <Link className="text-blue-500 hover:underline" href="/sign-in">
+            Đăng nhập
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Page;
