@@ -7,7 +7,7 @@ import { z } from "zod";
 import { signUpFormSchema } from "../(auth)/sign-up/page";
 import { nanoid } from "nanoid";
 import { createOtp } from "./create-otp";
-import { sendOtp } from "./send-otp";
+import { sendVerification } from "./send-verification";
 
 export async function signUp(values: z.infer<typeof signUpFormSchema>) {
   try {
@@ -22,8 +22,7 @@ export async function signUp(values: z.infer<typeof signUpFormSchema>) {
       };
     }
     await db.insert(users).values({ email, id: nanoid() });
-    const { otp } = await createOtp(email);
-    await sendOtp(email, otp);
+    await sendVerification(email);
     return {
       success: true,
       message: "Vui lòng kiểm tra email của bạn để xác minh tài khoản.",

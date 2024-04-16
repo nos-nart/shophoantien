@@ -29,6 +29,7 @@
     "clsx": "^2.1.0",
     "drizzle-orm": "^0.30.7",
     "drizzle-zod": "^0.5.1",
+    "handlebars": "^4.7.8",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.364.0",
     "nanoid": "^5.0.6",
@@ -43,7 +44,8 @@
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "ts-dedent": "^2.2.0",
-    "zod": "3.21.4"
+    "zod": "3.21.4",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/node": "^20",

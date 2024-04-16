@@ -35,4 +35,7 @@ export const {
     },
   },
   providers: [],
+  pages: {
+    signIn: "/sign-in",
+  },
 });

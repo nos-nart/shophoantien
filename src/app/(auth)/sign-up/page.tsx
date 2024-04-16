@@ -20,6 +20,7 @@ import { signUp } from "@/app/actions/sign-up";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { redirect } from "next/navigation";
 import { lcKey } from "@/lib/utils";
+import { sendVerification } from "@/app/actions/send-verification";
 
 export const signUpFormSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -37,6 +38,7 @@ const Page = () => {
     },
   });
   const isVerifiedRef = useRef<boolean | undefined>(undefined);
+  const emailRef = useRef("");
 
   function onSubmit(values: z.infer<typeof signUpFormSchema>) {
     isVerifiedRef.current = undefined;
@@ -50,16 +52,22 @@ const Page = () => {
           setLocalStorage(values.email);
           redirect("/verified");
         } else {
+          if (isVerifiedRef !== void 0) {
+            if (isVerified === false) {
+              toast.warning('Bấm vào nút "Gửi lại OTP" để xác thực tài khoản.');
+              emailRef.current = values.email;
+            }
+            if (isVerified) {
+              toast.info(
+                `Tài khoản với email: ${values.email} đã được xác thực. Vui lòng đăng nhập`
+              );
+            }
+            isVerifiedRef.current = isVerified;
+            return;
+          }
           toast.error("Thất bại", {
             description: message,
           });
-          if (isVerified === false) {
-            toast.warning('Bấm vào nút "Gửi lại OTP" để xác thực tài khoản.');
-          }
-          if (isVerified) {
-            toast.info(`Tài khoản với email: ${values.email} đã được xác thực`);
-          }
-          isVerifiedRef.current = isVerified;
         }
       } catch (error) {
         console.log("An error occurs");
@@ -67,7 +75,10 @@ const Page = () => {
     });
   }
 
-  function onResendOtp() {}
+  async function onResendOtp() {
+    await sendVerification(emailRef.current);
+    redirect("/verified");
+  }
 
   return (
     <div
@@ -100,14 +111,20 @@ const Page = () => {
                 </FormItem>
               )}
             />
-            {isVerifiedRef.current === false && (
-              <Button variant={"link"} onClick={onResendOtp}>
-                Gửi lại OTP
-              </Button>
-            )}
             <Button className="w-full" type="submit">
               Tạo tài khoản
             </Button>
+            {isVerifiedRef.current === false && (
+              <div className="flex mt-0">
+                <Button
+                  variant={"link"}
+                  onClick={onResendOtp}
+                  className="mt-0 px-0"
+                >
+                  Gửi lại OTP
+                </Button>
+              </div>
+            )}
           </form>
         </Form>
         <p className="text-xs py-6">
