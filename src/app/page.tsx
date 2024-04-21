@@ -1,4 +1,3 @@
-import { LogIn } from "lucide-react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -11,12 +10,15 @@ export default function Home() {
           className="_container flex justify-between items-center h-16"
           style={{ "--max-width": "90ch" }}
         >
-          <span>Shophoantien</span>
+          <div className="flex items-center gap-x-2">
+            <Image src="/test1.png" alt="logo" width={30} height={30} />
+            <span>Shophoantien</span>
+          </div>
           <Link
             href="/sign-in"
-            className="flex gap-x-2 items-center hover:underline-offset-2 hover:underline"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
           >
-            <LogIn size={"18"} /> Đăng nhập
+            Đăng nhập
           </Link>
         </nav>
       </header>

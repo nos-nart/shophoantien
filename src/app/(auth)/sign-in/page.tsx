@@ -1,4 +1,5 @@
 "use client";
+
 import { z } from "zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -11,11 +12,13 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { signIn } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useState } from "react";
+import { signIn } from "@/lib/auth";
 
-const formSchema = z.object({
+export const signInSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
   password: z
     .string()
@@ -25,37 +28,32 @@ const formSchema = z.object({
       ),
       {
         message:
-          "Mật khẩu phải có tối thiểu 8 ký tự và chứa ít nhất một chữ hoa, chữ thường, số và một ký tự đặc biệt",
+          "Mật khẩu phải dài ít nhất 8 ký tự và chứa ít nhất một ký tự viết hoa, một ký tự viết thường và một ký hiệu đặc biệt",
       }
     ),
 });
 
 const Page = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isPending, setIsPending] = useState(false);
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const response = await signIn("credentials", {
-      callbackUrl: "/",
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
-    console.log(response);
+  async function onSubmit(values: z.infer<typeof signInSchema>) {
+    const response = await signIn("credentials", values);
   }
 
   return (
     <div
       className="grid lg:grid-cols-2 gap-12"
-      style={{ width: "min(60ch, 100vw - 2rem)" }}
+      style={{ width: "min(70ch, 100vw - 2rem)" }}
     >
       <div className="lg:grid hidden place-content-center">
-        <Image src="/say-hi.png" alt="test" width={200} height={200} />
+        <Image src="/say-hi.png" alt="say-hi" width={200} height={200} />
       </div>
       <div>
         <div className="py-6">
@@ -70,7 +68,11 @@ const Page = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="your.email@example.com" {...field} />
+                    <Input
+                      disabled={isPending}
+                      placeholder="your.email@example.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -82,8 +84,9 @@ const Page = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
+                      id="password"
+                      disabled={isPending}
                       placeholder="Mật khẩu của bạn"
                       {...field}
                     />

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,36 @@ import { useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { signUp } from "@/app/actions/sign-up";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { redirect } from "next/navigation";
 import { lcKey } from "@/lib/utils";
 import { sendVerification } from "@/app/actions/send-verification";
+import { PasswordInput } from "@/components/ui/password-input";
 
-export const signUpFormSchema = z.object({
-  email: z.string().email({ message: "Email không hợp lệ" }),
-});
+export const signUpFormSchema = z
+  .object({
+    email: z.string().trim().email({ message: "Email không hợp lệ" }),
+    password: z
+      .string()
+      .refine(
+        (val) =>
+          /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/.test(
+            val
+          ),
+        {
+          message:
+            "Mật khẩu phải dài ít nhất 8 ký tự và chứa ít nhất một ký tự viết hoa, một ký tự viết thường và một ký hiệu đặc biệt",
+        }
+      ),
+    confirmPassword: z.string(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.password !== val.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["confirmPassword"],
+        message: "Mật khẩu không giống nhau",
+      });
+    }
+  });
 
 export type SignUpType = z.infer<typeof signUpFormSchema>;
 
@@ -35,6 +59,8 @@ const Page = () => {
     resolver: zodResolver(signUpFormSchema),
     defaultValues: {
       email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
   const isVerifiedRef = useRef<boolean | undefined>(undefined);
@@ -83,10 +109,10 @@ const Page = () => {
   return (
     <div
       className="grid lg:grid-cols-2 gap-12"
-      style={{ width: "min(60ch, 100vw - 2rem)" }}
+      style={{ width: "min(70ch, 100vw - 2rem)" }}
     >
       <div className="lg:grid hidden place-content-center">
-        <Image src="/monetize.png" alt="test" width={200} height={200} />
+        <Image src="/monetize.png" alt="monetize" width={200} height={200} />
       </div>
       <div>
         <div className="py-6">
@@ -104,6 +130,40 @@ const Page = () => {
                     <Input
                       disabled={isPending}
                       placeholder="your.email@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <PasswordInput
+                      id="password"
+                      disabled={isPending}
+                      placeholder="Mật khẩu của bạn"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <PasswordInput
+                      id="confirm-password"
+                      disabled={isPending}
+                      placeholder="Nhập lại mật khẩu"
                       {...field}
                     />
                   </FormControl>

@@ -5,6 +5,7 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "@auth/core/adapters";
+import { InferSelectModel } from "drizzle-orm";
 
 export const users = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -12,7 +13,10 @@ export const users = sqliteTable("user", {
   email: text("email").notNull(),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
   image: text("image"),
+  password: text("password"),
 });
+
+export type User = InferSelectModel<typeof users>;
 
 export const accounts = sqliteTable(
   "account",

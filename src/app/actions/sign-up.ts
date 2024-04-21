@@ -6,12 +6,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { signUpFormSchema } from "../(auth)/sign-up/page";
 import { nanoid } from "nanoid";
-import { createOtp } from "./create-otp";
 import { sendVerification } from "./send-verification";
 
 export async function signUp(values: z.infer<typeof signUpFormSchema>) {
   try {
-    const { email } = values;
+    const { email, password } = values;
     const existed = await db.select().from(users).where(eq(users.email, email));
     if (existed.length > 0) {
       return {
@@ -21,7 +20,9 @@ export async function signUp(values: z.infer<typeof signUpFormSchema>) {
           "Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.",
       };
     }
-    await db.insert(users).values({ email, id: nanoid() });
+    const argon2id = new (await import("oslo/password")).Argon2id();
+    const pwHash = await argon2id.hash(password);
+    await db.insert(users).values({ email, id: nanoid(), password: pwHash });
     await sendVerification(email);
     return {
       success: true,

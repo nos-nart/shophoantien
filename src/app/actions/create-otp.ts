@@ -12,7 +12,7 @@ export async function createOtp(email: string) {
     await db.insert(verificationTokens).values({
       identifier: email,
       token: otp,
-      expires: new Date(new Date().getTime() + 1000 * 60 * 3),
+      expires: new Date(new Date().getTime() + 1000 * 60 * 10),
     });
     return { otp };
   } catch (error: any) {

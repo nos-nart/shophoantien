@@ -46,10 +46,10 @@ const Page = () => {
   return (
     <div
       className="grid lg:grid-cols-2 gap-12"
-      style={{ width: "min(60ch, 100vw - 2rem)" }}
+      style={{ width: "min(70ch, 100vw - 2rem)" }}
     >
       <div className="lg:grid hidden place-content-center">
-        <Image src="/mail-sent.png" alt="test" width={200} height={200} />
+        <Image src="/mail-sent.png" alt="mail-sent" width={200} height={200} />
       </div>
       <div>
         <div className="py-6">
