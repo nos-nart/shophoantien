@@ -5,9 +5,10 @@ import { Adapter } from "next-auth/adapters";
 import { env } from "@/lib/env.mjs";
 import { ZodError } from "zod";
 import { signInSchema } from "@/app/(auth)/sign-in/page";
-import { User, users } from "./db/schema/auth";
+import { users } from "./db/schema/auth";
 import { eq } from "drizzle-orm";
 import Credentials from "next-auth/providers/credentials";
+import * as argon2 from "argon2";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db) as Adapter,
@@ -18,6 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  pages: {
+    signIn: "/sign-in",
+  },
   providers: [
     Credentials({
       credentials: {
@@ -26,21 +30,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       authorize: async (credentials) => {
         try {
-          let user: User | null | undefined = null;
-          const argon2id = new (await import("oslo/password")).Argon2id();
-          const { email, password } = await signInSchema.parseAsync(
-            credentials
-          );
-          // logic to salt and hash password
-          const pwHash = await argon2id.hash(password);
+          let user = null;
+          const { email, password } = credentials as any;
           // logic to verify if user exists
-          user = (
-            await db.select().from(users).where(eq(users.email, email))
-          ).at(0);
+          user = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .get();
           if (!user) {
             throw new Error("Không tìm thấy thông tin người dùng.");
           }
-          const isMatchedPw = await argon2id.verify(pwHash, user?.password!);
+          const isMatchedPw = await argon2.verify(user?.password!, password);
           if (!isMatchedPw) {
             return null;
           }
@@ -48,15 +49,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // FIXME: https://authjs.dev/getting-started/typescript
           return user as any;
         } catch (error) {
-          if (error instanceof ZodError) {
-            // Return `null` to indicate that the credentials are invalid
-            return null;
-          }
+          return null;
         }
       },
     }),
   ],
-  pages: {
-    signIn: "/sign-in",
-  },
 });

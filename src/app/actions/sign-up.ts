@@ -7,10 +7,15 @@ import { z } from "zod";
 import { signUpFormSchema } from "../(auth)/sign-up/page";
 import { nanoid } from "nanoid";
 import { sendVerification } from "./send-verification";
+import * as argon2 from "argon2";
 
 export async function signUp(values: z.infer<typeof signUpFormSchema>) {
+  const validateFields = signUpFormSchema.safeParse(values);
+  if (!validateFields.success) {
+    return { success: false, message: "Email hoặc password không hợp lệ" };
+  }
+  const { email, password } = validateFields.data;
   try {
-    const { email, password } = values;
     const existed = await db.select().from(users).where(eq(users.email, email));
     if (existed.length > 0) {
       return {
@@ -20,9 +25,12 @@ export async function signUp(values: z.infer<typeof signUpFormSchema>) {
           "Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.",
       };
     }
-    const argon2id = new (await import("oslo/password")).Argon2id();
-    const pwHash = await argon2id.hash(password);
-    await db.insert(users).values({ email, id: nanoid(), password: pwHash });
+    const pwHash = await argon2.hash(password);
+    await db
+      .insert(users)
+      .values({ email, id: nanoid(), password: pwHash })
+      .returning()
+      .get();
     await sendVerification(email);
     return {
       success: true,

@@ -12,6 +12,7 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://shophoantien.vercel.app"),
   title: {
     default: "Shop hoàn tiền",
     template: "%s | Shop hoàn tiền",

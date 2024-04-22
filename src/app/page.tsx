@@ -11,7 +11,7 @@ export default function Home() {
           style={{ "--max-width": "90ch" }}
         >
           <div className="flex items-center gap-x-2">
-            <Image src="/test1.png" alt="logo" width={30} height={30} />
+            <Image src="/coin.png" alt="logo" width={30} height={30} />
             <span>Shophoantien</span>
           </div>
           <Link

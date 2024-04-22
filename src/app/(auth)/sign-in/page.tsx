@@ -15,8 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useState } from "react";
-import { signIn } from "@/lib/auth";
+import { startTransition, useState } from "react";
+import { _signIn } from "@/app/actions/sign-in";
+import { toast } from "sonner";
 
 export const signInSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -44,7 +45,20 @@ const Page = () => {
   });
 
   async function onSubmit(values: z.infer<typeof signInSchema>) {
-    const response = await signIn("credentials", values);
+    startTransition(async () => {
+      try {
+        const res = await _signIn(values);
+        if (res.success) {
+          toast.success("Thành công", {
+            description: res.message,
+          });
+        } else {
+          // Handle error
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
   }
 
   return (
