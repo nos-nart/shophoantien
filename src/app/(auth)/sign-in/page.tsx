@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { PasswordInput } from "@/components/ui/password-input";
-import { startTransition, useState } from "react";
+import { useRef, useTransition } from "react";
 import { _signIn } from "@/app/actions/sign-in";
 import { toast } from "sonner";
 
@@ -35,7 +35,8 @@ export const signInSchema = z.object({
 });
 
 const Page = () => {
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const showVerifiedLinkRef = useRef(false);
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -45,15 +46,25 @@ const Page = () => {
   });
 
   async function onSubmit(values: z.infer<typeof signInSchema>) {
+    showVerifiedLinkRef.current = false;
     startTransition(async () => {
       try {
-        const res = await _signIn(values);
-        if (res.success) {
+        const result = await _signIn(values);
+        if (result.success) {
           toast.success("Thành công", {
-            description: res.message,
+            description: result.message,
           });
         } else {
-          // Handle error
+          const errorCode = result?.code;
+          if (errorCode === "account-no-verified") {
+            toast.warning(result.message, {
+              description:
+                "Nhấp vào liên kết bên dưới để xác minh tài khoản của bạn",
+            });
+            showVerifiedLinkRef.current = true;
+            return;
+          }
+          toast.warning(result.message);
         }
       } catch (error) {
         console.error(error);
@@ -109,6 +120,16 @@ const Page = () => {
                 </FormItem>
               )}
             />
+            {showVerifiedLinkRef.current && (
+              <div className="flex mt-0">
+                <Link
+                  className="text-blue-500 hover:underline"
+                  href="/verified"
+                >
+                  Xác thực tài khoản
+                </Link>
+              </div>
+            )}
             <Button className="w-full" type="submit">
               Đăng nhập
             </Button>

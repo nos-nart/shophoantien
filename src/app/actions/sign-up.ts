@@ -10,17 +10,17 @@ import { sendVerification } from "./send-verification";
 import * as argon2 from "argon2";
 
 export async function signUp(values: z.infer<typeof signUpFormSchema>) {
-  const validateFields = signUpFormSchema.safeParse(values);
-  if (!validateFields.success) {
-    return { success: false, message: "Email hoặc password không hợp lệ" };
-  }
-  const { email, password } = validateFields.data;
   try {
-    const existed = await db.select().from(users).where(eq(users.email, email));
-    if (existed.length > 0) {
+    const { email, password } = values;
+    const existed = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .get();
+    if (existed != null) {
       return {
         success: false,
-        isVerified: Boolean(existed[0].emailVerified),
+        isVerified: Boolean(existed.emailVerified),
         message:
           "Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.",
       };
