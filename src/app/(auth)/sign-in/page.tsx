@@ -18,6 +18,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useRef, useTransition } from "react";
 import { _signIn } from "@/app/actions/sign-in";
 import { toast } from "sonner";
+import { useEmailStore } from "@/stores/emailStore";
 
 export const signInSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -37,6 +38,7 @@ export const signInSchema = z.object({
 const Page = () => {
   const [isPending, startTransition] = useTransition();
   const showVerifiedLinkRef = useRef(false);
+  const { setEmail } = useEmailStore();
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -57,6 +59,7 @@ const Page = () => {
         } else {
           const errorCode = result?.code;
           if (errorCode === "account-no-verified") {
+            setEmail(values.email);
             toast.warning(result.message, {
               description:
                 "Nhấp vào liên kết bên dưới để xác minh tài khoản của bạn",

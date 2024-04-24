@@ -9,8 +9,6 @@ export function absoluteUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_BASE_URL}${path}`;
 }
 
-export const lcKey = "SHOP_HOAN_TIEN_SIGN_UP_EMAIL";
-
 export function generateOTP(): string {
   const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   let otp = "";
@@ -22,4 +20,12 @@ export function generateOTP(): string {
   }
 
   return otp;
+}
+
+export function formatCountDownTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
+  return `${formattedMinutes}:${formattedSeconds}`;
 }

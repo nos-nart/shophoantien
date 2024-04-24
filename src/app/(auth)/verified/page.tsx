@@ -19,9 +19,9 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useReadLocalStorage } from "@/hooks/useReadLocalStorage";
-import { lcKey } from "@/lib/utils";
-import { redirect } from "next/navigation";
+import { cn, formatCountDownTime } from "@/lib/utils";
+import { useCountdown } from "@/hooks/useCountDown";
+import { useEmailStore } from "@/stores/emailStore";
 
 const verifiedFormSchema = z.object({
   pin: z.string().min(6, {
@@ -30,8 +30,8 @@ const verifiedFormSchema = z.object({
 });
 
 const Page = () => {
-  const email = useReadLocalStorage(lcKey);
-
+  const { current } = useCountdown(0, 5 * 60);
+  const { email } = useEmailStore();
   const form = useForm<z.infer<typeof verifiedFormSchema>>({
     resolver: zodResolver(verifiedFormSchema),
     defaultValues: {
@@ -88,6 +88,18 @@ const Page = () => {
                 </FormItem>
               )}
             />
+            <div className="flex mt-0">
+              <Button
+                variant={"link"}
+                type="button"
+                className={cn(
+                  "px-0 text-blue-500",
+                  current !== "0" ? "cursor-not-allowed" : ""
+                )}
+              >
+                Gửi lại OTP {formatCountDownTime(Number(current))}
+              </Button>
+            </div>
             <Button type="submit">Xác thực</Button>
           </form>
         </Form>
