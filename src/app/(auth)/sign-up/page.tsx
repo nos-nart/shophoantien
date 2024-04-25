@@ -18,10 +18,9 @@ import Image from "next/image";
 import { useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { signUp } from "@/app/actions/sign-up";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { lcKey } from "@/lib/utils";
 import { sendVerification } from "@/app/actions/send-verification";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useEmailStore } from "@/stores/emailStore";
 
 export const signUpFormSchema = z
   .object({
@@ -53,8 +52,8 @@ export const signUpFormSchema = z
 export type SignUpType = z.infer<typeof signUpFormSchema>;
 
 const Page = () => {
-  const [_, setLocalStorage] = useLocalStorage(lcKey, "");
   const [isPending, startTransition] = useTransition();
+  const { setEmail } = useEmailStore();
   const form = useForm<z.infer<typeof signUpFormSchema>>({
     resolver: zodResolver(signUpFormSchema),
     defaultValues: {
@@ -75,7 +74,7 @@ const Page = () => {
           toast.success("Thành công", {
             description: message,
           });
-          setLocalStorage(values.email);
+          setEmail(values.email);
           redirect("/verified");
         } else {
           if (isVerifiedRef !== void 0) {

@@ -1,13 +1,21 @@
 import { db } from "@/lib/db";
 import { verificationTokens } from "@/lib/db/schema/auth";
 import { generateOTP } from "@/lib/utils";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
-export async function createOtp(email: string) {
+export async function createOTP(
+  email: string,
+  type: "verify-account" | "reset-password"
+) {
   try {
     await db
       .delete(verificationTokens)
-      .where(eq(verificationTokens.identifier, email))
+      .where(
+        and(
+          eq(verificationTokens.identifier, email),
+          eq(verificationTokens.type, type)
+        )
+      )
       .run();
     const otp = generateOTP();
     await db
@@ -16,6 +24,7 @@ export async function createOtp(email: string) {
         identifier: email,
         token: otp,
         expires: new Date(new Date().getTime() + 1000 * 60 * 10),
+        type,
       })
       .returning()
       .get();

@@ -34,7 +34,7 @@ export async function signUp(values: z.infer<typeof signUpFormSchema>) {
     await sendVerification(email);
     return {
       success: true,
-      message: "Vui lòng kiểm tra email của bạn để xác minh tài khoản.",
+      message: "Vui lòng kiểm tra email của bạn để xác thực tài khoản.",
     };
   } catch (error: any) {
     return { success: false, message: "Lỗi phía máy chủ" };

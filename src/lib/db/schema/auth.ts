@@ -66,6 +66,8 @@ export const verificationTokens = sqliteTable(
     identifier: text("identifier").notNull(),
     token: text("token").notNull().unique(),
     expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+    // "verify-account" | "reset-password"
+    type: text("type").notNull(),
   },
   (vt) => ({
     compositePk: primaryKey({ columns: [vt.identifier, vt.token] }),

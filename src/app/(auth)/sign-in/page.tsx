@@ -143,7 +143,7 @@ const Page = () => {
             className="text-blue-500 hover:underline"
             href="/forgot-password"
           >
-            Quên mật khẩu?
+            Lấy lại mật khẩu
           </Link>
           <div className="mt-6">
             Bạn chưa có tài khoản?{" "}

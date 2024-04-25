@@ -22,25 +22,60 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { cn, formatCountDownTime } from "@/lib/utils";
 import { useCountdown } from "@/hooks/useCountDown";
 import { useEmailStore } from "@/stores/emailStore";
+import { sendVerification } from "@/app/actions/send-verification";
+import { toast } from "sonner";
+import { verifyOTP } from "@/app/actions/verify-otp";
+import { redirect } from "next/navigation";
 
 const verifiedFormSchema = z.object({
-  pin: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
+  otp: z.string().min(6, {
+    message: "OTP của bạn phải có 6 ký tự.",
   }),
 });
 
 const Page = () => {
-  const { current } = useCountdown(0, 5 * 60);
+  const { current, reset } = useCountdown(0, 5 * 60);
   const { email } = useEmailStore();
   const form = useForm<z.infer<typeof verifiedFormSchema>>({
     resolver: zodResolver(verifiedFormSchema),
     defaultValues: {
-      pin: "",
+      otp: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof verifiedFormSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof verifiedFormSchema>) {
+    if (!email) {
+      // NOTE: should not/don't expect it will run to this block
+      toast.error("Không tìm thấy địa chỉ email");
+      return;
+    }
+    try {
+      const result = await verifyOTP(values.otp, email);
+      if (result.success) {
+        toast.success("Thành công", { description: result.message });
+        redirect("/sign-in");
+      } else {
+        toast.warning("Thất bại", { description: result.message });
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      console.error(error);
+    }
+  }
+
+  async function onResendOtp() {
+    // reset timer
+    reset();
+    if (!email) {
+      toast.error("Không tìm thấy địa chỉ email");
+      return;
+    }
+    try {
+      const result = await sendVerification(email);
+      toast.success("Thành công", { description: result.message });
+    } catch (error) {
+      toast.error("Thất bại");
+    }
   }
 
   return (
@@ -65,7 +100,7 @@ const Page = () => {
           >
             <FormField
               control={form.control}
-              name="pin"
+              name="otp"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -96,8 +131,10 @@ const Page = () => {
                   "px-0 text-blue-500",
                   current !== "0" ? "cursor-not-allowed" : ""
                 )}
+                onClick={onResendOtp}
               >
-                Gửi lại OTP {formatCountDownTime(Number(current))}
+                Gửi lại OTP{" "}
+                {current !== "0" && formatCountDownTime(Number(current))}
               </Button>
             </div>
             <Button type="submit">Xác thực</Button>
