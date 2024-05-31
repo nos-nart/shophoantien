@@ -8,17 +8,16 @@ import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
 import { createOTP } from './create-otp';
 
-export const transporter = nodemailer.createTransport<TransportOptions>({
-	service: 'gmail',
-	secure: false,
-	auth: {
-		user: env.GMAIL_ADDRESS,
-		pass: env.GMAIL_APP_PASSWORD
-	}
-} as TransportOptions);
-
 export async function sendVerification(identifier: string) {
 	try {
+		const transporter = nodemailer.createTransport<TransportOptions>({
+			service: 'gmail',
+			secure: false,
+			auth: {
+				user: env.GMAIL_ADDRESS,
+				pass: env.GMAIL_APP_PASSWORD
+			}
+		} as TransportOptions);
 		const { otp } = await createOTP(identifier, 'verify-account');
 		const emailsDir = path.resolve(process.cwd(), 'src', 'emails');
 		const emailFile = readFileSync(path.join(emailsDir, 'confirm-email.html'), {
@@ -40,6 +39,9 @@ export async function sendVerification(identifier: string) {
 		};
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	} catch (error: any) {
-		throw new Error(error);
+		return {
+			success: false,
+			message: 'Đã có lỗi xảy ra!'
+		};
 	}
 }

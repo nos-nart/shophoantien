@@ -1,0 +1,1 @@
+ALTER TABLE verificationToken ADD `type` text NOT NULL;

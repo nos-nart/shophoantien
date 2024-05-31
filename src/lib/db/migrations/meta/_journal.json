@@ -1,27 +1,34 @@
 {
-	"version": "5",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "5",
-			"when": 1712420426793,
-			"tag": "0000_fantastic_ego",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "5",
-			"when": 1713692724493,
-			"tag": "0001_faithful_madripoor",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "5",
-			"when": 1713796390438,
-			"tag": "0002_talented_lady_ursula",
-			"breakpoints": true
-		}
-	]
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1712420426793,
+      "tag": "0000_fantastic_ego",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1713692724493,
+      "tag": "0001_faithful_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1713796390438,
+      "tag": "0002_talented_lady_ursula",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1717161079966,
+      "tag": "0003_fantastic_penance",
+      "breakpoints": true
+    }
+  ]
 }

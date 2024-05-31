@@ -34,7 +34,7 @@ const Page = () => {
 		}
 	});
 
-	async function onSubmit(values: z.infer<typeof signInSchema>) {
+	function onSubmit(values: z.infer<typeof signInSchema>) {
 		showVerifiedLinkRef.current = false;
 		startTransition(async () => {
 			try {

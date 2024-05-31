@@ -54,32 +54,28 @@ const Page = () => {
 	function onSubmit(values: z.infer<typeof signUpFormSchema>) {
 		isVerifiedRef.current = undefined;
 		startTransition(async () => {
-			try {
-				const { message, success, isVerified } = await signUp(values);
-				if (success) {
-					toast.success('Thành công', {
-						description: message
-					});
-					setEmail(values.email);
-					redirect('/verified');
-				} else {
-					if (isVerifiedRef !== void 0) {
-						if (isVerified === false) {
-							toast.warning('Bấm vào nút "Gửi lại OTP" để xác thực tài khoản.');
-							emailRef.current = values.email;
-						}
-						if (isVerified) {
-							toast.info(`Tài khoản với email: ${values.email} đã được xác thực. Vui lòng đăng nhập`);
-						}
-						isVerifiedRef.current = isVerified;
-						return;
+			const { message, success, isVerified } = await signUp(values);
+			if (success) {
+				toast.success('Thành công', {
+					description: message
+				});
+				setEmail(values.email);
+				redirect('/verified');
+			} else {
+				if (isVerifiedRef !== undefined) {
+					if (isVerified === false) {
+						toast.warning('Bấm vào nút "Gửi lại OTP" để xác thực tài khoản.');
+						emailRef.current = values.email;
 					}
-					toast.error('Thất bại', {
-						description: message
-					});
+					if (isVerified) {
+						toast.info(`Tài khoản với email: ${values.email} đã được xác thực. Vui lòng đăng nhập`);
+					}
+					isVerifiedRef.current = isVerified;
+					return;
 				}
-			} catch (error) {
-				console.log('An error occurs');
+				toast.error('Thất bại', {
+					description: message
+				});
 			}
 		});
 	}

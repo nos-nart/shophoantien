@@ -9,10 +9,19 @@ import { env } from 'node:process';
 import type { z } from 'zod';
 import type { resetPasswordRequestSchema } from '../(auth)/forgot-password/page';
 import { createOTP } from './create-otp';
-import { transporter } from './send-verification';
+import nodemailer from 'nodemailer';
+import type { TransportOptions } from 'nodemailer';
 
 export async function resetPasswordRequest(values: z.infer<typeof resetPasswordRequestSchema>) {
 	try {
+		const transporter = nodemailer.createTransport<TransportOptions>({
+			service: 'gmail',
+			secure: false,
+			auth: {
+				user: env.GMAIL_ADDRESS,
+				pass: env.GMAIL_APP_PASSWORD
+			}
+		} as TransportOptions);
 		const now = new Date();
 		const existingToken = await db
 			.select()

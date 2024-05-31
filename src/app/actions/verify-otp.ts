@@ -26,9 +26,8 @@ export async function verifyOTP(otp: string, identifier: string) {
 			}
 			return { success: true, message: 'Tài khoản của bạn đã được xác thực.' };
 		}
-		return { success: false, message: 'Nhập sai hoặc OTP đã hêt hạn.' };
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
-		throw new Error(error);
+		return { success: false, message: 'Nhập sai hoặc OTP đã hết hạn.' };
+	} catch (_error) {
+		return { success: false, message: 'Đã có lỗi xảy ra!' };
 	}
 }
