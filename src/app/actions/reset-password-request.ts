@@ -4,13 +4,14 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { db } from '@/lib/db';
 import { verificationTokens } from '@/lib/db/schema/auth';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import { env } from 'node:process';
 import type { z } from 'zod';
 import type { resetPasswordRequestSchema } from '../(auth)/forgot-password/page';
 import { createOTP } from './create-otp';
 import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
+import Handlebars from 'handlebars';
 
 export async function resetPasswordRequest(values: z.infer<typeof resetPasswordRequestSchema>) {
 	try {
@@ -22,7 +23,7 @@ export async function resetPasswordRequest(values: z.infer<typeof resetPasswordR
 				pass: env.GMAIL_APP_PASSWORD
 			}
 		} as TransportOptions);
-		const now = new Date();
+		const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
 		const existingToken = await db
 			.select()
 			.from(verificationTokens)
@@ -30,7 +31,7 @@ export async function resetPasswordRequest(values: z.infer<typeof resetPasswordR
 				and(
 					eq(verificationTokens.identifier, values.email),
 					eq(verificationTokens.type, 'reset-password'),
-					gt(verificationTokens.expires, now)
+					gt(verificationTokens.expires, sql`${tenMinutesAgo}`)
 				)
 			)
 			.limit(1);
@@ -51,7 +52,7 @@ export async function resetPasswordRequest(values: z.infer<typeof resetPasswordR
 			to: values.email,
 			subject: 'Lấy lại mật khẩu - Shophoantien',
 			html: emailTemplate({
-				base_url: 'https://shophoantien.vercel.app',
+				base_url: env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://shophoantien.vercel.app',
 				otp
 			})
 		});

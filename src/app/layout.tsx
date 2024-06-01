@@ -53,7 +53,7 @@ export default function RootLayout({
 				<ThemeProvider attribute='class' defaultTheme='system' enableSystem={true} disableTransitionOnChange={true}>
 					{children}
 				</ThemeProvider>
-				<Toaster position='top-right' richColors={true} />
+				<Toaster position='top-right' richColors={true} duration={30000} />
 			</body>
 		</html>
 	);

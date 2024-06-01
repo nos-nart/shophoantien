@@ -17,14 +17,14 @@ export async function createOTP(email: string, type: 'verify-account' | 'reset-p
 			.values({
 				identifier: email,
 				token: otp,
+				// expires in 10 minutes
 				expires: new Date(new Date().getTime() + 1000 * 60 * 10),
 				type
 			})
 			.returning()
 			.get();
-		return { otp };
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
-		throw new Error(error);
+		return { otp, message: 'Tạo thành công mã OTP' };
+	} catch (_error) {
+		return { otp: null, message: 'Đã có lỗi xảy ra!' };
 	}
 }

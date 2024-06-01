@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useEmailStore } from '@/stores/emailStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -138,7 +139,8 @@ const Page = () => {
 								</FormItem>
 							)}
 						/>
-						<Button className='w-full' type='submit'>
+						<Button disabled={isPending} className='w-full' type='submit'>
+							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Tạo tài khoản
 						</Button>
 						{isVerifiedRef.current === false && (

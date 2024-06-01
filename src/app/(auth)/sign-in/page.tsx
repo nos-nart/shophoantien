@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useEmailStore } from '@/stores/emailStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useTransition } from 'react';
@@ -104,7 +105,8 @@ const Page = () => {
 								</Link>
 							</div>
 						)}
-						<Button className='w-full' type='submit'>
+						<Button disabled={isPending} className='w-full' type='submit'>
+							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Đăng nhập
 						</Button>
 					</form>

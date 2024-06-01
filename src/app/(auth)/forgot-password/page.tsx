@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input';
 import { useEmailStore } from '@/stores/emailStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -29,11 +30,7 @@ const Page = () => {
 	async function onSubmit(values: z.infer<typeof resetPasswordRequestSchema>) {
 		setEmail(values.email);
 		const { success, message } = await resetPasswordRequest(values);
-		if (success) {
-			toast.success(message);
-		} else {
-			toast.error(message);
-		}
+		toast[success ? 'success' : 'error'](message);
 	}
 
 	return (
@@ -60,7 +57,8 @@ const Page = () => {
 								</FormItem>
 							)}
 						/>
-						<Button className='w-full' type='submit'>
+						<Button disabled={isPending} className='w-full' type='submit'>
+							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Lấy lại mật khẩu
 						</Button>
 					</form>
