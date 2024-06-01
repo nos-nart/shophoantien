@@ -37,8 +37,7 @@ export async function sendVerification(identifier: string) {
 			success: true,
 			message: 'Vui lòng kiểm tra email để xác thực tài khoản.'
 		};
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
+	} catch (_error) {
 		return {
 			success: false,
 			message: 'Đã có lỗi xảy ra!'

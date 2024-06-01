@@ -1,12 +1,16 @@
 'use client';
 
+import { resetPassword } from '@/app/actions/reset-password';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { PasswordInput } from '@/components/ui/password-input';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 export const resetPasswordSchema = z
@@ -28,6 +32,7 @@ export const resetPasswordSchema = z
 	});
 
 const Page = () => {
+	const params = useParams<{ email: string; otp: string }>();
 	const [isPending, startTransition] = useTransition();
 	const form = useForm<z.infer<typeof resetPasswordSchema>>({
 		resolver: zodResolver(resetPasswordSchema),
@@ -37,8 +42,11 @@ const Page = () => {
 		}
 	});
 
-	async function onSubmit(values: z.infer<typeof resetPasswordSchema>) {
-		console.log(values);
+	function onSubmit(values: z.infer<typeof resetPasswordSchema>) {
+		startTransition(async () => {
+			const { success, message } = await resetPassword(values, params.email);
+			toast[success ? 'success' : 'error'](message);
+		});
 	}
 
 	return (
@@ -71,13 +79,19 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<PasswordInput id='password' disabled={isPending} placeholder='Nhập lại mật khẩu' {...field} />
+										<PasswordInput
+											id='confirm-password'
+											disabled={isPending}
+											placeholder='Nhập lại mật khẩu'
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-						<Button className='w-full' type='submit'>
+						<Button disabled={isPending} className='w-full' type='submit'>
+							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Đặt lại mật khẩu
 						</Button>
 					</form>

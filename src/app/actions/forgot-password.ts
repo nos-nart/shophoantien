@@ -3,18 +3,29 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { db } from '@/lib/db';
-import { verificationTokens } from '@/lib/db/schema/auth';
+import { users, verificationTokens } from '@/lib/db/schema/auth';
 import { and, eq, gt, sql } from 'drizzle-orm';
 import { env } from 'node:process';
 import type { z } from 'zod';
-import type { resetPasswordRequestSchema } from '../(auth)/forgot-password/page';
+import type { forgotPasswordSchema } from '../(auth)/forgot-password/page';
 import { createOTP } from './create-otp';
 import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
 import Handlebars from 'handlebars';
 
-export async function resetPasswordRequest(values: z.infer<typeof resetPasswordRequestSchema>) {
+export async function forgotPassword(values: z.infer<typeof forgotPasswordSchema>) {
 	try {
+		const user = await db.select().from(users).where(eq(users.email, values.email)).get();
+		if (!user) {
+			// The canonical way Password Reset works has always been to send an email to a user that does exist, And not giveaway clues whether the email exists or no…
+			throw new Error('Something went wrong!');
+		}
+		if (!user.emailVerified) {
+			return {
+				success: false,
+				message: 'Tài khoản của bạn chưa được xác thực.'
+			};
+		}
 		const transporter = nodemailer.createTransport<TransportOptions>({
 			service: 'gmail',
 			secure: false,
@@ -53,6 +64,7 @@ export async function resetPasswordRequest(values: z.infer<typeof resetPasswordR
 			subject: 'Lấy lại mật khẩu - Shophoantien',
 			html: emailTemplate({
 				base_url: env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://shophoantien.vercel.app',
+				email: values.email,
 				otp
 			})
 		});

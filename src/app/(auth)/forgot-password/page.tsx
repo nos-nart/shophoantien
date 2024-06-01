@@ -1,6 +1,6 @@
 'use client';
 
-import { resetPasswordRequest } from '@/app/actions/reset-password-request';
+import { forgotPassword } from '@/app/actions/forgot-password';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -13,24 +13,26 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-export const resetPasswordRequestSchema = z.object({
+export const forgotPasswordSchema = z.object({
 	email: z.string().email({ message: 'Email không hợp lệ' })
 });
 
 const Page = () => {
-	const [isPending, _startTransition] = useTransition();
+	const [isPending, startTransition] = useTransition();
 	const { setEmail } = useEmailStore();
-	const form = useForm<z.infer<typeof resetPasswordRequestSchema>>({
-		resolver: zodResolver(resetPasswordRequestSchema),
+	const form = useForm<z.infer<typeof forgotPasswordSchema>>({
+		resolver: zodResolver(forgotPasswordSchema),
 		defaultValues: {
 			email: ''
 		}
 	});
 
-	async function onSubmit(values: z.infer<typeof resetPasswordRequestSchema>) {
+	function onSubmit(values: z.infer<typeof forgotPasswordSchema>) {
 		setEmail(values.email);
-		const { success, message } = await resetPasswordRequest(values);
-		toast[success ? 'success' : 'error'](message);
+		startTransition(async () => {
+			const { success, message } = await forgotPassword(values);
+			toast[success ? 'success' : 'error'](message);
+		});
 	}
 
 	return (
