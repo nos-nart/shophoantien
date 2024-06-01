@@ -18,8 +18,8 @@
 		"db:check": "drizzle-kit check",
 		"lint:next": "next lint",
 		"lint": "biome lint ./src --diagnostic-level=error",
-		"format": "biome format --write --changed ./src",
-		"check": "biome check --apply --changed ./src"
+		"format": "biome format --write ./src",
+		"check": "biome check --apply ./src"
 	},
 	"simple-git-hooks": {
 		"pre-commit": "pnpm exec lint-staged"
