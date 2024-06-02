@@ -12,7 +12,7 @@ import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { useRef, useTransition } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -39,7 +39,7 @@ export const signUpFormSchema = z
 export type SignUpType = z.infer<typeof signUpFormSchema>;
 
 const Page = () => {
-	const [isPending, startTransition] = useTransition();
+	const [loading, setLoading] = useState(false);
 	const { setEmail } = useEmailStore();
 	const form = useForm<z.infer<typeof signUpFormSchema>>({
 		resolver: zodResolver(signUpFormSchema),
@@ -52,9 +52,10 @@ const Page = () => {
 	const isVerifiedRef = useRef<boolean | undefined>(undefined);
 	const emailRef = useRef('');
 
-	function onSubmit(values: z.infer<typeof signUpFormSchema>) {
+	async function onSubmit(values: z.infer<typeof signUpFormSchema>) {
 		isVerifiedRef.current = undefined;
-		startTransition(async () => {
+		setLoading(true);
+		try {
 			const { message, success, isVerified } = await signUp(values);
 			if (success) {
 				toast.success('Thành công', {
@@ -78,7 +79,11 @@ const Page = () => {
 					description: message
 				});
 			}
-		});
+		} catch (_) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	async function onResendOtp() {
@@ -104,7 +109,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input disabled={isPending} placeholder='your.email@example.com' {...field} />
+										<Input disabled={loading} placeholder='your.email@example.com' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -116,7 +121,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<PasswordInput id='password' disabled={isPending} placeholder='Mật khẩu của bạn' {...field} />
+										<PasswordInput id='password' disabled={loading} placeholder='Mật khẩu của bạn' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -130,7 +135,7 @@ const Page = () => {
 									<FormControl>
 										<PasswordInput
 											id='confirm-password'
-											disabled={isPending}
+											disabled={loading}
 											placeholder='Nhập lại mật khẩu'
 											{...field}
 										/>
@@ -139,8 +144,8 @@ const Page = () => {
 								</FormItem>
 							)}
 						/>
-						<Button disabled={isPending} className='w-full' type='submit'>
-							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
+						<Button disabled={loading} className='w-full' type='submit'>
+							{loading && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Tạo tài khoản
 						</Button>
 						{isVerifiedRef.current === false && (

@@ -8,7 +8,7 @@ import { useEmailStore } from '@/stores/emailStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
-import { useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -18,7 +18,7 @@ export const forgotPasswordSchema = z.object({
 });
 
 const Page = () => {
-	const [isPending, startTransition] = useTransition();
+	const [loading, setLoading] = useState(false);
 	const { setEmail } = useEmailStore();
 	const form = useForm<z.infer<typeof forgotPasswordSchema>>({
 		resolver: zodResolver(forgotPasswordSchema),
@@ -27,12 +27,17 @@ const Page = () => {
 		}
 	});
 
-	function onSubmit(values: z.infer<typeof forgotPasswordSchema>) {
+	async function onSubmit(values: z.infer<typeof forgotPasswordSchema>) {
 		setEmail(values.email);
-		startTransition(async () => {
+		setLoading(true);
+		try {
 			const { success, message } = await forgotPassword(values);
 			toast[success ? 'success' : 'error'](message);
-		});
+		} catch (_) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -53,14 +58,14 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input disabled={isPending} placeholder='your.email@example.com' {...field} />
+										<Input disabled={loading} placeholder='your.email@example.com' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-						<Button disabled={isPending} className='w-full' type='submit'>
-							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
+						<Button disabled={loading} className='w-full' type='submit'>
+							{loading && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Lấy lại mật khẩu
 						</Button>
 					</form>

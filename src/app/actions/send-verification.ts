@@ -8,7 +8,7 @@ import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
 import { createOTP } from './create-otp';
 
-export async function sendVerification(identifier: string) {
+export async function sendVerification(email: string) {
 	try {
 		const transporter = nodemailer.createTransport<TransportOptions>({
 			service: 'gmail',
@@ -18,7 +18,7 @@ export async function sendVerification(identifier: string) {
 				pass: env.GMAIL_APP_PASSWORD
 			}
 		} as TransportOptions);
-		const { otp } = await createOTP(identifier, 'verify-account');
+		const { otp } = await createOTP(email, 'verify-account');
 		const emailsDir = path.resolve(process.cwd(), 'src', 'emails');
 		const emailFile = readFileSync(path.join(emailsDir, 'confirm-email.html'), {
 			encoding: 'utf8'
@@ -26,7 +26,7 @@ export async function sendVerification(identifier: string) {
 		const emailTemplate = Handlebars.compile(emailFile);
 		transporter.sendMail({
 			from: env.GMAIL_ADDRESS,
-			to: identifier,
+			to: email,
 			subject: 'Xác thực tài khoản - Shophoantien',
 			html: emailTemplate({
 				base_url: 'https://shophoantien.vercel.app',

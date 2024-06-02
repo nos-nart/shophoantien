@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef, useTransition } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -24,7 +24,7 @@ export const signInSchema = z.object({
 });
 
 const Page = () => {
-	const [isPending, startTransition] = useTransition();
+	const [loading, setLoading] = useState(false);
 	const showVerifiedLinkRef = useRef(false);
 	const { setEmail } = useEmailStore();
 	const form = useForm<z.infer<typeof signInSchema>>({
@@ -35,31 +35,32 @@ const Page = () => {
 		}
 	});
 
-	function onSubmit(values: z.infer<typeof signInSchema>) {
+	async function onSubmit(values: z.infer<typeof signInSchema>) {
 		showVerifiedLinkRef.current = false;
-		startTransition(async () => {
-			try {
-				const result = await _signIn(values);
-				if (result.success) {
-					toast.success('Thành công', {
-						description: result.message
+		setLoading(true);
+		try {
+			const result = await _signIn(values);
+			if (result.success) {
+				toast.success('Thành công', {
+					description: result.message
+				});
+			} else {
+				const errorCode = result?.code;
+				if (errorCode === 'account-no-verified') {
+					setEmail(values.email);
+					toast.warning(result.message, {
+						description: 'Nhấp vào liên kết bên dưới để xác minh tài khoản của bạn'
 					});
-				} else {
-					const errorCode = result?.code;
-					if (errorCode === 'account-no-verified') {
-						setEmail(values.email);
-						toast.warning(result.message, {
-							description: 'Nhấp vào liên kết bên dưới để xác minh tài khoản của bạn'
-						});
-						showVerifiedLinkRef.current = true;
-						return;
-					}
-					toast.warning(result.message);
+					showVerifiedLinkRef.current = true;
+					return;
 				}
-			} catch (error) {
-				console.error(error);
+				toast.warning(result.message);
 			}
-		});
+		} catch (_error) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại!');
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -80,7 +81,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input disabled={isPending} placeholder='your.email@example.com' {...field} />
+										<Input disabled={loading} placeholder='your.email@example.com' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -92,7 +93,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<PasswordInput id='password' disabled={isPending} placeholder='Mật khẩu của bạn' {...field} />
+										<PasswordInput id='password' disabled={loading} placeholder='Mật khẩu của bạn' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -105,8 +106,8 @@ const Page = () => {
 								</Link>
 							</div>
 						)}
-						<Button disabled={isPending} className='w-full' type='submit'>
-							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
+						<Button disabled={loading} className='w-full' type='submit'>
+							{loading && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Đăng nhập
 						</Button>
 					</form>

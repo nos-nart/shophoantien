@@ -10,9 +10,11 @@ import { cn, formatCountDownTime } from '@/lib/utils';
 import { useEmailStore } from '@/stores/emailStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -24,6 +26,7 @@ const verifiedFormSchema = z.object({
 });
 
 const Page = () => {
+	const [loading, setLoading] = useState(false);
 	const { current, reset } = useCountdown(0, 5 * 60);
 	const { email } = useEmailStore();
 	const form = useForm<z.infer<typeof verifiedFormSchema>>({
@@ -39,17 +42,19 @@ const Page = () => {
 			toast.error('Không tìm thấy địa chỉ email');
 			return;
 		}
+		setLoading(true);
 		try {
-			const result = await verifyOTP(values.otp, email);
-			if (result.success) {
-				toast.success('Thành công', { description: result.message });
+			const { success, message } = await verifyOTP(values.otp, email);
+			if (success) {
+				toast.success('Thành công', { description: message });
 				redirect('/sign-in');
 			} else {
-				toast.warning('Thất bại', { description: result.message });
+				toast.warning('Thất bại', { description: message });
 			}
-		} catch (error) {
-			toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
-			console.error(error);
+		} catch (_) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
+		} finally {
+			setLoading(false);
 		}
 	}
 
@@ -61,10 +66,14 @@ const Page = () => {
 			return;
 		}
 		try {
-			const result = await sendVerification(email);
-			toast.success('Thành công', { description: result.message });
-		} catch (error) {
-			toast.error('Thất bại');
+			const { message, success } = await sendVerification(email);
+			if (success) {
+				toast.success('Thành công', { description: message });
+			} else {
+				toast.error('Thất bại', { description: message });
+			}
+		} catch (_) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
 		}
 	}
 
@@ -86,7 +95,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS} {...field}>
+										<InputOTP disabled={loading} maxLength={6} pattern={REGEXP_ONLY_DIGITS} {...field}>
 											<InputOTPGroup>
 												<InputOTPSlot index={0} />
 												<InputOTPSlot index={1} />
@@ -106,11 +115,15 @@ const Page = () => {
 								variant={'link'}
 								type='button'
 								className={cn('px-0 text-blue-500', current !== '0' ? 'cursor-not-allowed' : '')}
-								onClick={onResendOtp}>
+								onClick={onResendOtp}
+								disabled={loading}>
 								Gửi lại OTP {current !== '0' && formatCountDownTime(Number(current))}
 							</Button>
 						</div>
-						<Button type='submit'>Xác thực</Button>
+						<Button disabled={loading} type='submit'>
+							{loading && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
+							Xác thực
+						</Button>
 					</form>
 				</Form>
 				<p className='text-xs py-6'>

@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -33,7 +33,7 @@ export const resetPasswordSchema = z
 
 const Page = () => {
 	const params = useParams<{ email: string; otp: string }>();
-	const [isPending, startTransition] = useTransition();
+	const [loading, setLoading] = useState(false);
 	const form = useForm<z.infer<typeof resetPasswordSchema>>({
 		resolver: zodResolver(resetPasswordSchema),
 		defaultValues: {
@@ -42,11 +42,16 @@ const Page = () => {
 		}
 	});
 
-	function onSubmit(values: z.infer<typeof resetPasswordSchema>) {
-		startTransition(async () => {
+	async function onSubmit(values: z.infer<typeof resetPasswordSchema>) {
+		setLoading(true);
+		try {
 			const { success, message } = await resetPassword(values, params.email);
 			toast[success ? 'success' : 'error'](message);
-		});
+		} catch (_) {
+			toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -67,7 +72,7 @@ const Page = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<PasswordInput id='password' disabled={isPending} placeholder='Mật khẩu mới' {...field} />
+										<PasswordInput id='password' disabled={loading} placeholder='Mật khẩu mới' {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -81,7 +86,7 @@ const Page = () => {
 									<FormControl>
 										<PasswordInput
 											id='confirm-password'
-											disabled={isPending}
+											disabled={loading}
 											placeholder='Nhập lại mật khẩu'
 											{...field}
 										/>
@@ -90,8 +95,8 @@ const Page = () => {
 								</FormItem>
 							)}
 						/>
-						<Button disabled={isPending} className='w-full' type='submit'>
-							{isPending && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
+						<Button disabled={loading} className='w-full' type='submit'>
+							{loading && <LoaderCircle className='mr-2 h-4 w-4 animate-spin' />}
 							Đặt lại mật khẩu
 						</Button>
 					</form>
