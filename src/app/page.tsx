@@ -1,35 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUp } from 'lucide-react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function Home() {
-	const [showBackToTop, setShowBackToTop] = useState(false);
-	useEffect(() => {
-		const handleScroll = () => {
-			if (window.scrollY > 200) {
-				setShowBackToTop(true);
-			} else {
-				setShowBackToTop(false);
-			}
-		};
-		window.addEventListener('scroll', handleScroll);
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-		};
-	}, []);
-
-	const scrollToTop = () => {
-		window.scrollTo({
-			top: 0,
-			behavior: 'smooth'
-		});
-	};
+	const { showBackToTop, scrollToTop } = useScrollToTop();
 
 	return (
 		<div className='flex flex-col min-h-[100dvh]'>
@@ -104,17 +84,18 @@ export default function Home() {
 								src='/placeholder.svg'
 								width='550'
 								height='310'
-								alt='Image'
+								alt='dummy'
 								className='mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last'
 							/>
 							<div className='flex flex-col justify-center space-y-4'>
 								<ul className='grid gap-6'>
 									<li>
 										<div className='grid gap-1'>
-											<h3 className='text-xl font-bold'>Earn Cash Back at Thousands of Stores</h3>
+											<h3 className='text-xl font-bold'>What is Lorem Ipsum?</h3>
 											<p className='text-gray-500 dark:text-gray-400'>
-												Rakuten partners with over 3,500 stores, including major retailers, online shops, and travel
-												sites, to offer cash back on your purchases.
+												Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been
+												the industry&apos;s standard dummy text ever since the 1500s, when an unknown printer took a
+												galley of type and scrambled it to make a type specimen book
 											</p>
 										</div>
 									</li>
